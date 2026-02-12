@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ДАШЕНЬКА</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", "Arial", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, #ffd4e3 0%, transparent 35%),
+        radial-gradient(circle at 80% 76%, #ffc1d7 0%, transparent 36%),
+        linear-gradient(150deg, hsl(328 72% 93%), hsl(327 66% 86%));
+    }
+
+    .app {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .balloon-field {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .balloon {
+      position: absolute;
+      left: var(--x);
+      bottom: -30vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      will-change: transform, opacity;
+      animation: balloon-rise var(--dur) linear var(--delay) forwards;
+    }
+
+    .balloon-bulb {
+      width: var(--size);
+      height: calc(var(--size) * 1.26);
+      border-radius: 50% 50% 46% 46%;
+      background:
+        radial-gradient(circle at 34% 27%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.08) 32%, transparent 36%),
+        linear-gradient(165deg, var(--c1), var(--c2));
+      box-shadow:
+        inset -8px -10px 16px rgba(102, 38, 63, 0.18),
+        0 8px 16px rgba(120, 42, 78, 0.2);
+      animation: balloon-sway var(--sway) ease-in-out infinite alternate;
+      position: relative;
+    }
+
+    .balloon-bulb::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -6px;
+      width: 10px;
+      height: 8px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      background: rgba(104, 44, 68, 0.86);
+    }
+
+    .balloon-string {
+      width: 2px;
+      height: calc(var(--size) * 1.1);
+      border-radius: 999px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(85, 52, 67, 0.52));
+      animation: balloon-sway var(--sway) ease-in-out infinite alternate;
+      transform-origin: top;
+    }
+
+    @keyframes balloon-rise {
+      0% {
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+      }
+      8% {
+        opacity: 0.95;
+      }
+      100% {
+        transform: translate3d(var(--drift), -145vh, 0);
+        opacity: 0.88;
+      }
+    }
+
+    @keyframes balloon-sway {
+      0% {
+        transform: rotate(-3deg) translateX(-5px);
+      }
+      100% {
+        transform: rotate(3deg) translateX(5px);
+      }
+    }
+
+    .heart {
+      --scale: 1;
+      width: min(75vmin, 340px);
+      aspect-ratio: 1 / 1;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      position: relative;
+      cursor: pointer;
+      perspective: 1000px;
+      user-select: none;
+      touch-action: none;
+      appearance: none;
+    }
+
+    .heart:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.8);
+      outline-offset: 10px;
+      border-radius: 999px;
+    }
+
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 78%;
+      height: 22%;
+      left: 11%;
+      bottom: 4%;
+      transform: scale(var(--scale)) translateZ(-1px);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(153, 20, 62, 0.34), transparent 72%);
+      filter: blur(10px);
+      transition: transform 0.1s ease-out;
+      pointer-events: none;
+    }
+
+    .inner-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transform: scale(var(--scale));
+      transition: 0.1s ease-out;
+      pointer-events: none;
+    }
+
+    .heart-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transform-style: preserve-3d;
+      will-change: transform;
+      pointer-events: none;
+    }
+
+    #layers {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+      pointer-events: none;
+    }
+
+    .heart-layer path {
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      transition: fill 0.3s ease-out, stroke 0.3s ease-out;
+      fill: hsl(334 100% 50%);
+      stroke: hsl(334 100% 35%);
+      stroke-width: 10;
+    }
+
+    .heart-stroke path {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.96);
+      stroke-width: 18;
+      stroke-dasharray: 300 1206;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 8px rgba(255, 240, 247, 0.52));
+    }
+
+    .heart-shine {
+      filter: blur(3px);
+    }
+
+    .heart-label text {
+      font-size: 46px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      fill: #fff8fc;
+      stroke: rgba(137, 22, 59, 0.7);
+      stroke-width: 1.7;
+      paint-order: stroke fill;
+      filter:
+        drop-shadow(0 2px 1px rgba(121, 16, 53, 0.38))
+        drop-shadow(0 0 8px rgba(255, 244, 249, 0.5));
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .splash {
+      mix-blend-mode: screen;
+    }
+
+    .splash-path {
+      stroke: hsl(334deg 60% 80%);
+      stroke-width: 0;
+      fill: none;
+      stroke-linecap: round;
+      transform-origin: center;
+      animation-timing-function: linear;
+      animation-duration: 0.5s;
+      animation-name: splash;
+    }
+
+    @keyframes splash {
+      0% {
+        transform: scale(0.5);
+        stroke-width: 10;
+      }
+      50% {
+        transform: scale(1.5);
+        stroke-width: 100;
+      }
+      100% {
+        transform: scale(2.5);
+        stroke-width: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="balloon-field" id="balloon-field" aria-hidden="true"></div>
+  <div class="app">
+    <button class="heart" id="heart" type="button" aria-label="3D heart with text ДАШЕНЬКА">
+      <div class="inner-wrapper">
+        <svg class="splash heart-svg" id="splash" viewBox="0 0 500 430" aria-hidden="true"></svg>
+        <div id="layers" aria-hidden="true"></div>
+
+        <svg class="heart-stroke heart-svg" id="stroke-svg" viewBox="0 0 500 430" aria-hidden="true">
+          <path id="stroke-path"></path>
+        </svg>
+
+        <svg class="heart-shine heart-svg" id="shine-svg" viewBox="0 0 500 430" aria-hidden="true">
+          <defs>
+            <clipPath id="heart-clip">
+              <path id="clip-path"></path>
+            </clipPath>
+          </defs>
+          <rect id="shine-rect" y="0" width="500" height="430" clip-path="url(#heart-clip)"></rect>
+        </svg>
+
+        <svg class="heart-label heart-svg" id="label-svg" viewBox="0 0 500 430" aria-hidden="true">
+          <text x="250" y="230">ДАШЕНЬКА</text>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <script>
+    const NS = "http://www.w3.org/2000/svg";
+    const HEART_PATH = "M 250 390 C 100 250 20 180 20 95 C 20 15 80 0 120 0 C 174 0 220 30 250 85 C 280 30 326 0 380 0 C 420 0 480 15 480 95 C 480 180 400 250 250 390";
+    const HEART_PATH_LENGTH = 1506;
+
+    const LAYERS = 24;
+    const LAYER_GAP = 3;
+    const MAX_ROT = 58;
+
+    const heart = document.getElementById("heart");
+    const balloonField = document.getElementById("balloon-field");
+    const layersRoot = document.getElementById("layers");
+    const splash = document.getElementById("splash");
+    const strokeSvg = document.getElementById("stroke-svg");
+    const strokePath = document.getElementById("stroke-path");
+    const shineSvg = document.getElementById("shine-svg");
+    const shineRect = document.getElementById("shine-rect");
+    const clipPath = document.getElementById("clip-path");
+    const labelSvg = document.getElementById("label-svg");
+
+    strokePath.setAttribute("d", HEART_PATH);
+    clipPath.setAttribute("d", HEART_PATH);
+
+    const layerMeta = [];
+    let rotX = -25;
+    let rotY = 25;
+    let love = 1;
+    let pressed = false;
+    let rafId = 0;
+    let lastPointer = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+    function svgNode(tag, attrs = {}) {
+      const node = document.createElementNS(NS, tag);
+      for (const [key, value] of Object.entries(attrs)) {
+        node.setAttribute(key, value);
+      }
+      return node;
+    }
+
+    function buildHeartLayers() {
+      for (let i = 0; i < LAYERS; i++) {
+        const t = i / (LAYERS - 1);
+        const scale = Math.sin(t * Math.PI) / 10 + 1;
+        const z = i * LAYER_GAP;
+
+        const svg = svgNode("svg", {
+          class: "heart-layer heart-svg",
+          viewBox: "0 0 500 430",
+          "aria-hidden": "true"
+        });
+
+        const path = svgNode("path", { d: HEART_PATH });
+        svg.appendChild(path);
+        layersRoot.appendChild(svg);
+        layerMeta.push({ svg, z, scale });
+      }
+    }
+
+    function applyHeartState() {
+      heart.style.setProperty("--scale", (0.8 + love * 0.2 - (pressed ? 0.1 : 0)).toFixed(3));
+    }
+
+    function renderTransforms() {
+      for (const layer of layerMeta) {
+        layer.svg.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${layer.z}px) scale(${layer.scale.toFixed(4)})`;
+      }
+
+      const topZ = (LAYERS + 1) * LAYER_GAP;
+      strokeSvg.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${topZ}px) scale(1.01)`;
+      shineSvg.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${topZ + 2}px) scale(0.9)`;
+      labelSvg.style.transform = `rotateX(${rotX.toFixed(2)}deg) rotateY(${rotY.toFixed(2)}deg) translateZ(${topZ + 3}px) scale(0.9)`;
+
+      const strokeOffset = (Math.atan2(rotY, rotX) / Math.PI) * (HEART_PATH_LENGTH / 2) + HEART_PATH_LENGTH / 2;
+      strokePath.style.strokeDashoffset = strokeOffset.toFixed(2);
+
+      const shineX = rotY / MAX_ROT + 0.5;
+      const opacity = clamp(rotX / 190 + 0.52, 0.18, 0.78);
+      shineRect.setAttribute("x", `${(500 - shineX * 700).toFixed(2)}`);
+      shineRect.setAttribute("fill", `rgba(255, 255, 255, ${opacity.toFixed(3)})`);
+    }
+
+    function updateTilt(clientX, clientY) {
+      const rect = heart.getBoundingClientRect();
+      const bounds = 50;
+      const left = rect.left - bounds;
+      const top = rect.top - bounds;
+      const width = rect.width + bounds * 2;
+      const height = rect.height + bounds * 2;
+
+      const px = (clamp(clientX, left, left + width) - (left + width / 2)) / width;
+      const py = (clamp(clientY, top, top + height) - (top + height / 2)) / height;
+
+      rotY = px * MAX_ROT;
+      rotX = -py * MAX_ROT;
+      renderTransforms();
+    }
+
+    function queueTiltUpdate(event) {
+      lastPointer = { x: event.clientX, y: event.clientY };
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        updateTilt(lastPointer.x, lastPointer.y);
+      });
+    }
+
+    function spawnSplash() {
+      const ring = svgNode("path", { d: HEART_PATH, class: "splash-path" });
+      splash.appendChild(ring);
+      setTimeout(() => ring.remove(), 1000);
+    }
+
+    function spawnBalloon(initialDelay = true) {
+      const balloon = document.createElement("div");
+      balloon.className = "balloon";
+
+      const palette = [
+        ["#ffc0d5", "#f07aa8"],
+        ["#ffc8de", "#ef8db6"],
+        ["#ffd4e7", "#f39fbe"],
+        ["#ffe0ec", "#ef9db4"],
+        ["#ffd7f1", "#dd8fce"]
+      ];
+      const [c1, c2] = palette[Math.floor(Math.random() * palette.length)];
+
+      const size = 26 + Math.random() * 34;
+      const x = Math.random() * 100;
+      const drift = -24 + Math.random() * 48;
+      const dur = 11 + Math.random() * 8;
+      const delay = initialDelay ? Math.random() * 2.6 : Math.random() * 0.9;
+      const sway = 1.4 + Math.random() * 1.6;
+
+      balloon.style.setProperty("--size", `${size.toFixed(1)}px`);
+      balloon.style.setProperty("--x", `${x.toFixed(2)}vw`);
+      balloon.style.setProperty("--drift", `${drift.toFixed(2)}vw`);
+      balloon.style.setProperty("--dur", `${dur.toFixed(2)}s`);
+      balloon.style.setProperty("--delay", `${delay.toFixed(2)}s`);
+      balloon.style.setProperty("--sway", `${sway.toFixed(2)}s`);
+      balloon.style.setProperty("--c1", c1);
+      balloon.style.setProperty("--c2", c2);
+
+      const bulb = document.createElement("div");
+      bulb.className = "balloon-bulb";
+      const string = document.createElement("div");
+      string.className = "balloon-string";
+
+      balloon.appendChild(bulb);
+      balloon.appendChild(string);
+      balloonField.appendChild(balloon);
+
+      balloon.addEventListener("animationend", (event) => {
+        if (event.animationName !== "balloon-rise") return;
+        balloon.remove();
+        spawnBalloon(false);
+      });
+    }
+
+    function setPressed(state) {
+      pressed = state;
+      applyHeartState();
+    }
+
+    document.addEventListener("pointermove", queueTiltUpdate, { passive: true });
+
+    heart.addEventListener("pointerdown", () => {
+      setPressed(true);
+    });
+
+    window.addEventListener("pointerup", () => {
+      if (!pressed) return;
+      setPressed(false);
+
+      if (love >= 1) {
+        love = 0;
+      } else {
+        love = Math.min(1, love + 0.3);
+        spawnSplash();
+      }
+      applyHeartState();
+    });
+
+    heart.addEventListener("keydown", (event) => {
+      if (event.key !== " " && event.key !== "Enter") return;
+      event.preventDefault();
+      setPressed(true);
+    });
+
+    heart.addEventListener("keyup", (event) => {
+      if (event.key !== " " && event.key !== "Enter") return;
+      event.preventDefault();
+      if (!pressed) return;
+      setPressed(false);
+
+      if (love >= 1) {
+        love = 0;
+      } else {
+        love = Math.min(1, love + 0.3);
+        spawnSplash();
+      }
+      applyHeartState();
+    });
+
+    buildHeartLayers();
+    for (let i = 0; i < 14; i++) {
+      spawnBalloon(true);
+    }
+    applyHeartState();
+    renderTransforms();
+  </script>
+</body>
+</html>
